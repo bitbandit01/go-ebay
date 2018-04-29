@@ -3,7 +3,7 @@ package commands
 import (
 	"encoding/xml"
 
-	"github.com/cubixle/go-ebay/config"
+	"github.com/bitbandit01/go-ebay/config"
 )
 
 func NewReviseItemRequest(cfg *config.Config, item ItemResponse) *ReviseItemRequest {

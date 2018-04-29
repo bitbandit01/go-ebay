@@ -3,7 +3,7 @@ package commands
 import (
 	"encoding/xml"
 
-	"github.com/cubixle/go-ebay/config"
+	"github.com/bitbandit01/go-ebay/config"
 )
 
 // NewGetOrdersRequest returns struct
@@ -11,6 +11,7 @@ func NewGetOrdersRequest(cfg *config.Config, CreateTimeFrom string,
 	CreateTimeTo string,
 	OrderRole string,
 	SortingOrder string,
+	Page string,
 	Version string) *GetOrdersRequest {
 
 	return &GetOrdersRequest{
@@ -18,6 +19,10 @@ func NewGetOrdersRequest(cfg *config.Config, CreateTimeFrom string,
 		CreateTimeTo:   CreateTimeTo,
 		OrderRole:      OrderRole,
 		SortingOrder:   SortingOrder,
+		Pagination: PaginationRequest{
+			EntriesPerPage: "100",
+			PageNumber:     Page,
+		},
 		RequesterCredentials: RequesterCredentials{
 			EBayAuthToken: cfg.AuthToken,
 		},
@@ -31,6 +36,7 @@ type GetOrdersRequest struct {
 	CreateTimeTo         string
 	OrderRole            string
 	SortingOrder         string
+	Pagination           PaginationRequest
 	Xmlns                string `xml:"xmlns,attr"`
 	Version              string
 	RequesterCredentials RequesterCredentials `xml:"RequesterCredentials"`
