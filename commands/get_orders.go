@@ -6,13 +6,14 @@ import (
 	"github.com/bitbandit01/go-ebay/config"
 )
 
-// NewGetOrdersRequest returns struct
-func NewGetOrdersRequest(cfg *config.Config, CreateTimeFrom string,
+// GetOrdersByCreationDate returns a pointer to GetOrdersRequest.  CreateTimeFrom and CreateTimeTo
+//are ISO-8601 formatted date strings within which to return orders. Pagination is available by setting the
+//Page variable (min:1).
+func GetOrdersByCreationDate(cfg *config.Config, CreateTimeFrom string,
 	CreateTimeTo string,
 	OrderRole string,
 	SortingOrder string,
-	Page string,
-	Version string) *GetOrdersRequest {
+	Page string) *GetOrdersRequest {
 
 	return &GetOrdersRequest{
 		CreateTimeFrom: CreateTimeFrom,
@@ -27,16 +28,42 @@ func NewGetOrdersRequest(cfg *config.Config, CreateTimeFrom string,
 			EBayAuthToken: cfg.AuthToken,
 		},
 		Xmlns:   "urn:ebay:apis:eBLBaseComponents",
-		Version: Version,
+		Version: "1055",
+	}
+}
+
+// GetRecentOrders returns a pointer to GetOrdersRequest.  Takes NumDays to look
+//backwards in time for created or modified orders (min: 1, max: 30)
+func GetRecentOrders(cfg *config.Config, NumDays int,
+	OrderRole string,
+	SortingOrder string,
+	Page string) *GetOrdersRequest {
+
+	return &GetOrdersRequest{
+		NumberOfDays: NumDays,
+		OrderRole:    OrderRole,
+		SortingOrder: SortingOrder,
+		Pagination: PaginationRequest{
+			EntriesPerPage: "100",
+			PageNumber:     Page,
+		},
+		RequesterCredentials: RequesterCredentials{
+			EBayAuthToken: cfg.AuthToken,
+		},
+		DetailLevel: "ReturnAll",
+		Xmlns:       "urn:ebay:apis:eBLBaseComponents",
+		Version:     "1055",
 	}
 }
 
 type GetOrdersRequest struct {
-	CreateTimeFrom       string
-	CreateTimeTo         string
+	CreateTimeFrom       string `xml:",omitempty"`
+	CreateTimeTo         string `xml:",omitempty"`
+	NumberOfDays         int
 	OrderRole            string
 	SortingOrder         string
 	Pagination           PaginationRequest
+	DetailLevel          string
 	Xmlns                string `xml:"xmlns,attr"`
 	Version              string
 	RequesterCredentials RequesterCredentials `xml:"RequesterCredentials"`
@@ -85,8 +112,8 @@ type EBay struct {
 }
 
 type Item struct {
-	ItemITitleD string
-	ItemID      string
+	Title  string
+	ItemID string
 	ListingDetails
 	SellingStatus
 }
@@ -170,10 +197,10 @@ type Order struct {
 	IntegratedMerchantCreditCardEnabled string
 	IsMultiLegShipping                  string
 	LogisticsPlanType                   string
-	MonetaryDetailss                    MonetaryDetails         `xml:"MonetaryDetails"`
-	MultiLegShippingDetailss            MultiLegShippingDetails `xml:"MultiLegShippingDetails"`
+	MonetaryDetails                     MonetaryDetails         `xml:"MonetaryDetails"`
+	MultiLegShippingDetails             MultiLegShippingDetails `xml:"MultiLegShippingDetails"`
 	PaidTime                            string
-	PaymentHoldDetailss                 PaymentHoldDetails `xml:"PaymentHoldDetails"`
+	PaymentHoldDetails                  PaymentHoldDetails `xml:"PaymentHoldDetails"`
 	PaymentHoldStatus                   string
 	PaymentMethods                      string
 	PickupDetailss                      PickupDetails `xml:"PickupDetails"`
@@ -186,7 +213,7 @@ type Order struct {
 	ShippingDetails   ShippingDetails `xml:"ShippingDetails"`
 	ShippingAddress   ShippingAddress `xml:"ShippingAddress"`
 	Subtotal          string
-	Total             float64
+	Total             string
 	TransactionsArray TransactionArray
 }
 type Transaction struct {
@@ -358,18 +385,15 @@ type MultiLegShippingDetails struct {
 	SellerShipmentToLogisticsProvider
 }
 type MonetaryDetails struct {
-	Payments
-	Refunds
+	Payments []Payment
+	Refunds  []Refund
 }
 
-type Payments struct {
-	Payment []Payment
-}
-
-type Refunds struct {
-	Refund
-}
 type Refund struct {
+	Refund RefundDetails
+}
+
+type RefundDetails struct {
 	FeeOrCreditAmount string
 	//ReferenceID       string
 	RefundAmount string
@@ -394,14 +418,17 @@ type SalesTax struct {
 }
 
 type Payment struct {
-	FeeOrCreditAmount  string
-	Payee              string
-	Payer              string
-	PaymentAmount      string
-	PaymentReferenceID string
-	PaymentStatus      string
-	PaymentTime        string
-	//ReferenceID        string
+	Payment PaymentDetails
+}
+
+type PaymentDetails struct {
+	FeeOrCreditAmount string
+	Payee             string
+	Payer             string
+	PaymentAmount     string
+	ReferenceID       string
+	PaymentStatus     string
+	PaymentTime       string
 }
 
 type ExternalTransaction struct {
