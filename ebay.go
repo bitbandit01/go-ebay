@@ -33,7 +33,7 @@ func execute(request *Request) ([]byte, error) {
 	req.Header.Add("X-EBAY-API-CERT-NAME", config.CertId)
 	req.Header.Add("X-EBAY-API-CALL-NAME", request.Command.CallName())
 	req.Header.Add("X-EBAY-API-SITEID", strconv.Itoa(config.SiteId))
-	req.Header.Add("X-EBAY-API-COMPATIBILITY-LEVEL", strconv.Itoa(837))
+	req.Header.Add("X-EBAY-API-COMPATIBILITY-LEVEL", strconv.Itoa(1055))
 	req.Header.Add("Content-Type", "application/xml; charset=utf-8")
 
 	client := &http.Client{}
