@@ -112,10 +112,10 @@ type EBay struct {
 }
 
 type Item struct {
-	Title  string
-	ItemID string
-	ListingDetails
-	SellingStatus
+	Title                               string
+	ItemID                              string
+	Sku                                 string
+	IntegratedMerchantCreditCardEnabled bool
 }
 
 type ListingDetails struct {
@@ -123,23 +123,26 @@ type ListingDetails struct {
 	StartTime string
 }
 
-/*<SellingStatus>
-      <BidCount>0</BidCount>
-      <BidIncrement currencyID="USD">0.25</BidIncrement>
-      <ConvertedCurrentPrice currencyID="USD">1.0</ConvertedCurrentPrice>
-      <CurrentPrice currencyID="USD">1.0</CurrentPrice>
-      <LeadCount>0</LeadCount>
-      <MinimumToBid currencyID="USD">1.0</MinimumToBid>
-      <QuantitySold>0</QuantitySold>
-      <ReserveMet>true</ReserveMet>
-      <SecondChanceEligible>false</SecondChanceEligible>
-      <ListingStatus>Active</ListingStatus>
-	</SellingStatus>*/
-
 type SellingStatus struct {
 	CurrentPrice float64
 	BidCount     string
 	QuantitySold int
+}
+
+type Variation struct {
+	Sku                  string `xml:"SKU"`
+	VariationTitle       string
+	VariationViewItemUrl string
+	VariationSpecifics   VariationSpecifics
+}
+
+type VariationSpecifics struct {
+	NameValueList []VariationNameValueList
+}
+
+type VariationNameValueList struct {
+	Name  string
+	Value string
 }
 
 type GetOrdersRequestResponse struct {
@@ -222,6 +225,7 @@ type Transaction struct {
 	ShippingDetails   ShippingDetails `xml:"ShippingDetails"`
 	CreatedDate       string
 	Item              Item
+	Variation         Variation
 	QuantityPurchased string
 	//	Status Status
 	TransactionID    string
@@ -256,14 +260,12 @@ type ShippingDetails struct {
 	XMLName xml.Name `xml:"ShippingDetails"`
 	CalculatedShippingRate
 	CODCost         string
-	InsuranceFee    string
-	InsuranceOption string
 	InsuranceWanted string
 
 	InternationalShippingServiceOption
 	//SellingManagerSalesRecordNumber
-	ShipmentTrackingDetails
-	ShippingServiceOptions ShippingServiceOptions `xml:"ShippingServiceOptions"`
+	ShipmentTrackingDetails []ShipmentTrackingDetails
+	ShippingServiceOptions  []ShippingServiceOptions `xml:"ShippingServiceOptions"`
 	TaxTable
 }
 type ShippingAddress struct {
@@ -325,14 +327,8 @@ type InternationalShippingServiceOption struct {
 type CalculatedShippingRate struct {
 	InternationalPackagingHandlingCosts string
 	OriginatingPostalCode               string
-	PackageDepth                        string
-	PackageLength                       string
-	PackageWidth                        string
 	PackagingHandlingCosts              string
 	ShippingIrregular                   string
-	ShippingPackage                     string
-	WeightMajor                         string
-	WeightMinor                         string
 }
 
 type PickupOptions struct {
@@ -366,10 +362,10 @@ type ShipToAddress struct {
 	Name              string
 	Phone             string
 	PostalCode        string
-	//ReferenceID       string
-	StateOrProvince string
-	Street1         string
-	Street2         string
+	ReferenceID       string
+	StateOrProvince   string
+	Street1           string
+	Street2           string
 }
 type SellerShipmentToLogisticsProvider struct {
 	ShippingServiceDetails
@@ -457,7 +453,7 @@ type CancelDetail struct {
 }
 
 type CheckoutStatus struct {
-	eBayPaymentStatus                   string
+	EbayPaymentStatus                   string `xml:"eBayPaymentStatus"`
 	IntegratedMerchantCreditCardEnabled string
 	LastModifiedTime                    string
 	PaymentInstrument                   string
